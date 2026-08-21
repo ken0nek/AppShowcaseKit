@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- No tracking: nothing here sets a cross-app identifier or reads the IDFA. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<!--
+		Nothing is collected. The only request this module makes carries the
+		host app's own bundle identifier and a storefront code, to Apple's
+		public lookup endpoint.
+	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<!--
+		Empty by design, and it takes work to keep it that way:
+		- the roster is cached to a file rather than to UserDefaults, which
+		  would be CA92.1;
+		- cache freshness comes from a timestamp inside the payload rather
+		  than from the file's modification date, which would be C617.1.
+	-->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>

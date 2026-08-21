@@ -1,0 +1,24 @@
+.DS_Store
+.build/
+.swiftpm/
+xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# === Skills managed by skills.sh (npx skills) ===
+# skills-lock.json and scripts/update-skills.sh are committed; the downloaded skill
+# folders (.agents/skills) and their agent symlinks (.claude/skills) are derived —
+# rebuild them with scripts/update-skills.sh.
+# Blanket-ignored so the managed set is never hand-listed (that list kept rotting).
+# Nothing under .claude/ is committed here, authored or managed, and `git add -f` is
+# not an exception to that.
+/.agents/skills/
+/.claude/skills/*
+
+# A device build needs a team identifier, which belongs to whoever is holding
+# the phone rather than to this project. Examples/Signing.xcconfig includes it
+# optionally and says so; this is the file it looks for.
+Examples/Signing.local.xcconfig
+
+# xcodebuild output — `.build/` above is SwiftPM only, and this tree gets both.
+# Unanchored so it catches Examples/build/ too.
+build/

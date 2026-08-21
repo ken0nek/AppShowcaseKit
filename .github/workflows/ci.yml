@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    # macOS is the test host, not a supported platform: the suite is hermetic and
+    # Core is Foundation-only, so it runs without a simulator. See README's
+    # Platforms section for what the package actually claims.
+    name: Test (macOS host)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Build
+        run: swift build --build-tests
+      - name: Test
+        # Hermetic: SHOWCASE_LIVE_BUNDLE_ID is deliberately unset, so the live
+        # smoke suite skips. CI must never depend on a third-party endpoint
+        # being up, or on its rate limit.
+        run: swift test
+
+  platforms:
+    # The supported platform. `swift build` in the job above compiles for the Mac
+    # host only, so nothing behind `#if os(iOS)` is exercised there — this job is
+    # the one that sees it.
+    name: Build (${{ matrix.platform }})
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [iOS]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Build for ${{ matrix.platform }}
+        # `build-for-testing` rather than `build`, so the test targets are
+        # compiled for this platform too. `swift test` only ever compiles them
+        # for macOS, and the assertions that matter here sit behind
+        # `#if os(iOS)` — a presenter that does not exist on a platform is a
+        # compile error, and this is the step that sees it. It does not run
+        # them; running needs a concrete simulator destination.
+        run: |
+          xcodebuild build-for-testing \
+            -scheme AppShowcaseKit-Package \
+            -destination 'generic/platform=${{ matrix.platform }}' \
+            -quiet
+
+  example:
+    # The example app is outside the package graph, so nothing above compiles
+    # it — and an example that CI does not build breaks at the next toolchain
+    # bump without turning main red, which is how sample apps die. It is also
+    # the harness for the device checks the hermetic suite cannot make, so it
+    # has to still launch when someone reaches for it.
+    name: Example app
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Build the example app
+        # A simulator destination with signing off: a runner has no team, and
+        # Examples/Signing.xcconfig deliberately holds none. Compiling is the
+        # whole claim here — running the app needs a real App Store, which no
+        # simulator has.
+        run: |
+          xcodebuild build \
+            -project Examples/AppShowcaseKitExample.xcodeproj \
+            -scheme AppShowcaseKitExampleiOS \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet
+
+  format:
+    name: Format
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Lint
+        # --strict promotes findings to errors; the config lives in
+        # .swift-format. Note that swift-format ships with the toolchain, so a
+        # runner-image bump can change its opinions and turn main red with no
+        # code change. The fix when that happens is a reformat commit, not a
+        # revert — pin `xcode-version` here if that trade stops being worth it.
+        run: swift format lint --strict --recursive Sources Tests Examples Package.swift

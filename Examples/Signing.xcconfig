@@ -1,0 +1,16 @@
+// Signing a device build is per-machine, and this project records none of it.
+//
+// Picking a team in Signing & Capabilities writes DEVELOPMENT_TEAM straight
+// into project.pbxproj, which dirties the tree with an identifier nobody else
+// can use and which no reviewer can tell from a deliberate change. The setting
+// arrives from here instead.
+//
+// Nothing is needed for a simulator build or for CI — both build with signing
+// off. To run on a device, create Signing.local.xcconfig beside this file:
+//
+//     DEVELOPMENT_TEAM = ABCDE12345
+//
+// It is git-ignored, and the include below is optional, so its absence is not
+// an error for anyone who never runs on hardware.
+
+#include? "Signing.local.xcconfig"

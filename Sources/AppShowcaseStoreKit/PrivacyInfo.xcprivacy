@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+		No tracking. Reading the storefront asks StoreKit which App Store this
+		device buys from — a property of the device, not of the person using
+		it. No cross-app identifier is set, and no IDFA is read.
+	-->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<!--
+		Nothing is collected. The request this module makes is the one Core
+		makes — the host app's own bundle identifier and a storefront code, to
+		Apple's public lookup endpoint — reached through Core, with nothing
+		added to it here.
+	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<!--
+		Empty by design. The storefront read is not a required-reason API, and
+		this module adds no other platform call: the caching it relies on is
+		Core's, which keeps its own list empty for the reasons Core's manifest
+		records.
+	-->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>

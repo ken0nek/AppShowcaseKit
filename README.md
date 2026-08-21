@@ -270,6 +270,79 @@ A device build needs a team identifier, and this project stores none: create
 picks it up through `Examples/Signing.xcconfig`. The file is git-ignored. The
 simulator needs nothing.
 
+## Showcase
+
+These are the apps I ship. If one of them is useful to you, a five-star rating
+is what funds the next one.
+
+<table>
+  <tr>
+    <th>App Icon</th>
+    <th>App Name &amp; Description</th>
+    <th>Supported Platforms</th>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://apps.apple.com/app/apple-store/id6766441698?pt=10674868&ct=github&mt=8">
+        <img src="https://raw.githubusercontent.com/ken0nek/AppShowcaseKit/main/Images/Apps/Whyzard.webp" width="64" />
+      </a>
+    </td>
+    <td>
+      <a href="https://apps.apple.com/app/apple-store/id6766441698?pt=10674868&ct=github&mt=8">
+        <strong>Whyzard – Learn Together</strong>
+      </a>
+      <br />
+      Kids' why-questions answered twice over: a calm version to read together, and the real explanation underneath for the grown-up reading it.
+    </td>
+    <td>iPhone, iPad</td>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://apps.apple.com/app/apple-store/id6745852921?pt=10674868&ct=github&mt=8">
+        <img src="https://raw.githubusercontent.com/ken0nek/AppShowcaseKit/main/Images/Apps/BrewSmart.webp" width="64" />
+      </a>
+    </td>
+    <td>
+      <a href="https://apps.apple.com/app/apple-store/id6745852921?pt=10674868&ct=github&mt=8">
+        <strong>BrewSmart: Coffee Ratio</strong>
+      </a>
+      <br />
+      Pour-over ratio calculator, guided brew timer, and a log that dials in the next cup. No ads, no subscriptions.
+    </td>
+    <td>iPhone, iPad, Watch</td>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://apps.apple.com/app/apple-store/id6758604043?pt=10674868&ct=github&mt=8">
+        <img src="https://raw.githubusercontent.com/ken0nek/AppShowcaseKit/main/Images/Apps/LinkClean.webp" width="64" />
+      </a>
+    </td>
+    <td>
+      <a href="https://apps.apple.com/app/apple-store/id6758604043?pt=10674868&ct=github&mt=8">
+        <strong>LinkClean – URL Cleaner</strong>
+      </a>
+      <br />
+      Strips tracking parameters out of any link before you share it, and reads QR codes on the way in.
+    </td>
+    <td>iPhone, iPad</td>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://apps.apple.com/app/apple-store/id6784029039?pt=10674868&ct=github&mt=8">
+        <img src="https://raw.githubusercontent.com/ken0nek/AppShowcaseKit/main/Images/Apps/Rondo.webp" width="64" />
+      </a>
+    </td>
+    <td>
+      <a href="https://apps.apple.com/app/apple-store/id6784029039?pt=10674868&ct=github&mt=8">
+        <strong>Rondo – Prime Factorization</strong>
+      </a>
+      <br />
+      Every counting number as a quiet, hypnotic dance of its own prime factors.
+    </td>
+    <td>iPhone, iPad, Watch</td>
+  </tr>
+</table>
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

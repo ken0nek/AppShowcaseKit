@@ -5,8 +5,8 @@ import SwiftUI
 /// Drives `ShowcaseLoader.load()` directly, and that choice is the screen's
 /// reason to exist.
 ///
-/// `ShowcaseLoader.resolved(overlay:override:)` — what the shipping section
-/// calls — swallows every error by contract, because a Settings screen must
+/// `ShowcaseLoader.resolved(overlay:override:)` — the silent resolve under the
+/// shipping section — swallows every error by contract, because a Settings screen must
 /// never tell a user that a cross-promotion failed. That is right for the
 /// product and useless for a harness, so this screen takes the throwing path and
 /// names what came back: `hostAppNotFound`, `rosterMissingEntityParameter`,

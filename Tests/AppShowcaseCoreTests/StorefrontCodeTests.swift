@@ -42,6 +42,13 @@ struct StorefrontCodeTests {
         #expect(StorefrontCode(alpha3: "ZZZ").parameterValue == "us")
     }
 
+    /// Apple sells in Kosovo under a code the ISO register does not have, so a
+    /// table generated from the register alone sends it to `us`.
+    @Test("maps the one storefront whose code is not in the ISO register")
+    func mapsKosovo() {
+        #expect(StorefrontCode(alpha3: "XKS").parameterValue == "xk")
+    }
+
     @Test("accepts the lowercase a caller might hand it")
     func isCaseInsensitive() {
         #expect(StorefrontCode(alpha3: "jpn").parameterValue == "jp")

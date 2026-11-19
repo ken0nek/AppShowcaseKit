@@ -1,6 +1,22 @@
 import AppShowcaseCore
 import Foundation
 
+/// What a silent resolve came to.
+package enum ShowcaseResolution: Sendable, Equatable {
+    /// An answer, possibly empty.
+    case roster([ShowcaseApp])
+    /// No answer: the load was cancelled, or the network failed with nothing
+    /// cached. Asking again can succeed.
+    case unfinished
+
+    package var apps: [ShowcaseApp] {
+        switch self {
+        case .roster(let apps): apps
+        case .unfinished: []
+        }
+    }
+}
+
 extension ShowcaseLoader {
     /// The apps this device can install, or empty.
     ///
@@ -9,9 +25,10 @@ extension ShowcaseLoader {
     /// Settings screen never reports that a cross-promotion failed to load — so
     /// a caller can gate a row on `isEmpty` without handling an error.
     ///
-    /// Cancellation resolves to empty along with everything else. ``load()``
-    /// propagates it deliberately. This method promises never to throw, and its
-    /// caller is a task that is going away regardless.
+    /// Cancellation resolves to empty along with everything else, so `[]` can
+    /// mean *cancelled* as well as *nothing to show*. A caller whose state
+    /// outlives its task checks `Task.isCancelled` before it records the
+    /// answer. ``load()`` propagates cancellation. This method never throws.
     /// - Parameter override: Host identity, for the cases where the running
     ///   bundle is not the one on the App Store — see ``ShowcaseHostOverride``.
     ///   Each `nil` field falls back to the environment, so naming an identifier
@@ -20,12 +37,19 @@ extension ShowcaseLoader {
         overlay: ShowcaseOverlay = .none,
         override: ShowcaseHostOverride = .none
     ) async -> [ShowcaseApp] {
+        await resolution(overlay: overlay, override: override).apps
+    }
+
+    package static func resolution(
+        overlay: ShowcaseOverlay = .none,
+        override: ShowcaseHostOverride = .none
+    ) async -> ShowcaseResolution {
         let host = effectiveHost(
             override: override,
             environmentBundleID: Bundle.main.bundleIdentifier,
             environmentStorefront: await StorefrontCode.current
         )
-        return await resolved(
+        return await resolution(
             transport: URLSessionTransport(),
             hostBundleID: host.bundleID,
             storefront: host.storefront,
@@ -72,12 +96,39 @@ extension ShowcaseLoader {
         overlay: ShowcaseOverlay,
         cache: (any ShowcaseCache)?
     ) async -> [ShowcaseApp] {
-        (try? await ShowcaseLoader(
+        await resolution(
             transport: transport,
             hostBundleID: hostBundleID,
             storefront: storefront,
             overlay: overlay,
             cache: cache
-        ).load()) ?? []
+        ).apps
+    }
+
+    static func resolution(
+        transport: any LookupTransport,
+        hostBundleID: String,
+        storefront: StorefrontCode,
+        overlay: ShowcaseOverlay,
+        cache: (any ShowcaseCache)?
+    ) async -> ShowcaseResolution {
+        do {
+            return .roster(
+                try await ShowcaseLoader(
+                    transport: transport,
+                    hostBundleID: hostBundleID,
+                    storefront: storefront,
+                    overlay: overlay,
+                    cache: cache
+                ).load()
+            )
+        } catch let error as LookupError where error != .transportFailed {
+            // Not `.unfinished`: these do not change on a retry, and a host
+            // that is not on the store would spend a request against the
+            // shared rate limit on every appearance.
+            return .roster([])
+        } catch {
+            return .unfinished
+        }
     }
 }

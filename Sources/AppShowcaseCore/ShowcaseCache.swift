@@ -160,7 +160,7 @@ public protocol ShowcaseCache: Sendable {
     func store(_ entry: ShowcaseCacheEntry, for key: ShowcaseCacheKey) async
 }
 
-/// The default cache: one JSON file per storefront under `Caches/`.
+/// The default cache: one JSON file per host and storefront under `Caches/`.
 ///
 /// `Caches` rather than `Application Support` because a roster is re-derivable
 /// from the network at any time. That makes it correct for the system to evict

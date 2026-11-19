@@ -14,12 +14,12 @@ let package = Package(
     name: "AppShowcaseKit",
     // iOS is the supported platform, and the only one this package claims.
     //
-    // The iOS floor is policy rather than constraint: Core is Foundation-only, and
-    // the StoreKit and UI targets' newest API is iOS 15, so all three would
-    // compile far lower — but a floor is a promise to keep working, and this one
-    // is set where the package is actually built and run. Raising a floor later
-    // breaks adopters. Lowering one never does, so if you need iOS 15, open an
-    // issue rather than a fork.
+    // The iOS floor is policy rather than constraint: Core is Foundation-only and
+    // its newest API is iOS 16 (`Duration`), and the StoreKit and UI targets'
+    // newest is iOS 15, so all three would compile lower — but a floor is a
+    // promise to keep working, and this one is set where the package is actually
+    // built and run. Raising a floor later breaks adopters. Lowering one never
+    // does, so if you need iOS 16, open an issue rather than a fork.
     //
     // The macOS floor is NOT a support claim, and it is not removable. `swift
     // build` and `swift test` run on a Mac host, and that is the entire hermetic
@@ -85,11 +85,12 @@ let package = Package(
         // The UI target's platform forks are the part of this package a macOS
         // `swift build` cannot speak for: a presenter that does not exist on a
         // platform is a compile error, and nothing else here would surface it.
-        // Core is listed even though it arrives transitively, because these
-        // tests name `ShowcaseTapStyle`, which Core owns.
+        // Core and StoreKit are listed even though they arrive transitively,
+        // because these tests name `ShowcaseTapStyle` and `ShowcaseResolution`,
+        // which they own.
         .testTarget(
             name: "AppShowcaseUITests",
-            dependencies: ["AppShowcaseUI", "AppShowcaseCore"]
+            dependencies: ["AppShowcaseUI", "AppShowcaseCore", "AppShowcaseStoreKit"]
         ),
     ]
 )

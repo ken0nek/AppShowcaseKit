@@ -17,9 +17,10 @@ swift format --in-place --recursive Sources Tests Examples Package.swift
 output prints — and a filter that matches nothing **exits 0**, so read the
 "Test run with N tests" line before believing a green run.
 
-`swift build` covers macOS only, so **nothing behind `#if os(iOS)` is compiled by
-it or by `swift test`** — the store-sheet presenter and the `AppShowcaseUITests`
-assertions included. Run what CI runs before touching `AppShowcaseUI`:
+`swift build` and `swift test` compile for macOS only, so **nothing behind
+`#if os(iOS)` is compiled by either**: not the store-sheet presenter, and not the
+iOS-gated UI tests (`StoreSheetDismisserTests` and the iOS branches of
+`PresenterMappingTests`). Run what CI runs before touching `AppShowcaseUI`:
 
 ```sh
 xcodebuild build-for-testing -scheme AppShowcaseKit-Package \
@@ -27,7 +28,7 @@ xcodebuild build-for-testing -scheme AppShowcaseKit-Package \
 ```
 
 `build-for-testing`, not `build`: plain `build` skips the test targets, so it
-misses compile errors in `Tests/AppShowcaseUITests/`.
+misses compile errors in the iOS-gated tests, which nothing else compiles.
 
 The example app is outside the package graph, so neither command above compiles
 it. Run this before touching `Examples/`:
@@ -79,10 +80,12 @@ whole chain test without a simulator, so SwiftUI, StoreKit and UIKit all stay
 above it — `RunningOS.current` derives the OS from `ProcessInfo` rather than
 `UIDevice` for exactly this reason.
 
-**`AppShowcaseUI` inherits every pixel from the host.** It owns no colors, fonts
-or strings. The only text it renders arrives from the App Store already
-localized. The supported answer to "I want different rows" is `AppShowcaseCore`
-plus your own view, not a tint parameter.
+**`AppShowcaseUI` takes no cosmetic parameter.** Its row uses only semantic
+styles (`.footnote`, `.secondary`, `.quaternary`), so the host's appearance,
+Dynamic Type and contrast settings carry through, and it owns no strings. The
+only text it renders arrives from the App Store already localized. The supported
+answer to "I want different rows" is `AppShowcaseCore` plus your own view, not a
+tint parameter.
 
 **`ShowcaseHostOverride` is host identity, and that is its entire remit.** It
 exists because a running bundle identifier and an App Store listing can
@@ -104,8 +107,8 @@ cache hit included. Filtering depends on the running OS and the caller's overlay
 both of which change without the network changing.
 
 **`RosterResolver` checks platform before version.** A Mac app's floor is a *macOS*
-version, which sorts below every shipping iOS version — so a version check applied
-across platforms certifies the row it exists to reject.
+version, and macOS and iOS numbers are not comparable, even when they are equal.
+A version check applied across platforms can certify the row it exists to reject.
 
 **No required-reason API.** All three targets ship a `PrivacyInfo.xcprivacy`
 declaring none, which rules out `UserDefaults` for the cache (`CA92.1`) and the
@@ -125,8 +128,9 @@ store-sheet delegate carries `@MainActor` on the conformance itself — an isola
 conformance (SE-0470), which no compiler before 6.2 can parse at all. Lowering
 the floor is not an edit to `Package.swift`: it means rewriting that conformance
 as `@preconcurrency`, or as a `nonisolated` method plus `MainActor.assumeIsolated`,
-both of which state the isolation less precisely. CI builds `latest-stable`, so
-nothing verifies the floor in either direction — it is a claim.
+both of which state the isolation less precisely. CI builds `latest-stable` only,
+so no check in this repository tests the floor in either direction — it is a
+claim.
 
 **A team identifier never enters `project.pbxproj`.** Picking a team in Signing &
 Capabilities writes one there and dirties the tree with a value nobody else can

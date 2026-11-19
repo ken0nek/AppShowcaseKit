@@ -54,6 +54,15 @@ struct RosterResolverTests {
         #expect(resolved.map(\.id) == [hostApp])
     }
 
+    @Test("keeps the order the API returned when nothing is pinned")
+    func keepsAPIOrderWithoutAnOverlay() throws {
+        let roster = try liveRoster()
+
+        let resolved = RosterResolver(hostAppID: nil, running: .iOS("26.0")).resolve(roster)
+
+        #expect(resolved.map(\.id) == roster.map(\.id))
+    }
+
     /// A roster from an account that ships to both stores. Ten iOS apps, five Mac
     /// apps, one `wrapperType` between them.
     private func mixedRoster() throws -> [ShowcaseApp] {

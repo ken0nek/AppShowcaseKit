@@ -113,7 +113,10 @@ public struct AppShowcaseSection<Header: View>: View {
         let override = hostOverride
         // Silent by design. A Settings screen never tells a user that a
         // cross-promotion failed to load.
-        apps = await ShowcaseLoader.resolved(overlay: overlay, override: override)
+        let resolution = await ShowcaseLoader.resolution(overlay: overlay, override: override)
+        guard let landed = ShowcaseSectionLoad.landed(resolution, isCancelled: Task.isCancelled)
+        else { return }
+        apps = landed
         loadedOverride = override
     }
 }
@@ -129,6 +132,18 @@ extension AppShowcaseSection where Header == EmptyView {
         self.init(
             tapStyle: tapStyle, attribution: attribution, overlay: overlay, onSelect: onSelect
         ) { EmptyView() }
+    }
+}
+
+enum ShowcaseSectionLoad {
+    /// The roster to record, or `nil` when the load must not be recorded.
+    ///
+    /// Not "record whatever came back": the task is cancelled whenever the
+    /// view disappears, and recording that as loaded keeps the section empty
+    /// for the rest of the view's life.
+    static func landed(_ resolution: ShowcaseResolution, isCancelled: Bool) -> [ShowcaseApp]? {
+        guard !isCancelled, case .roster(let apps) = resolution else { return nil }
+        return apps
     }
 }
 

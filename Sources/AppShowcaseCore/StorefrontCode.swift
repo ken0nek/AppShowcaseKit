@@ -31,7 +31,9 @@ public struct StorefrontCode: Sendable, Equatable, Hashable {
     static var knownAlpha3Count: Int { alpha2.count }
 
     /// ISO 3166-1, generated from the published register rather than typed by
-    /// hand. Regenerate rather than edit in place.
+    /// hand. Regenerate rather than edit in place — and keep `XKS`, which a
+    /// regeneration drops: Kosovo's storefront uses a code the register does
+    /// not have.
     private static let alpha2: [String: String] = [
         "ABW": "aw", "AFG": "af", "AGO": "ao", "AIA": "ai",
         "ALA": "ax", "ALB": "al", "AND": "ad", "ARE": "ae",
@@ -94,7 +96,7 @@ public struct StorefrontCode: Sendable, Equatable, Hashable {
         "UMI": "um", "URY": "uy", "USA": "us", "UZB": "uz",
         "VAT": "va", "VCT": "vc", "VEN": "ve", "VGB": "vg",
         "VIR": "vi", "VNM": "vn", "VUT": "vu", "WLF": "wf",
-        "WSM": "ws", "YEM": "ye", "ZAF": "za", "ZMB": "zm",
-        "ZWE": "zw",
+        "WSM": "ws", "XKS": "xk", "YEM": "ye", "ZAF": "za",
+        "ZMB": "zm", "ZWE": "zw",
     ]
 }

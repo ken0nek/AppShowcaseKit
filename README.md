@@ -32,19 +32,24 @@ roster count, so you can decide whether to show a row at all), or
 `AppShowcaseCore` (draw your own).
 
 The package is consumed as source, so "breaking" here means a change to a public
-type, to an initializer's defaults, or to the shape of what
-`ShowcaseLoader.load()` returns. Those wait for a major version, which is what
-makes plain `from:` the right pin.
+type, to a default argument, or to the shape of what `ShowcaseLoader.load()`
+returns. That includes a new case on a public enum, a new requirement on a public
+protocol, a raised platform or Swift floor, and a renamed `ShowcaseTapStyle`
+case, whose raw value a host may have stored. Those wait for a major version,
+which is what makes plain `from:` the right pin.
 
-If your host's running bundle identifier is not the one on the App Store — an
-app extension has its own, and it is not listed at all — name the one that is:
+If your host's running bundle identifier is not the one on the App Store — a
+renamed app, for one — name the one that is:
 
 ```swift
 .environment(\.showcaseHostOverride, .init(bundleID: "com.example.YourApp"))
 ```
 
 The default path needs none of this, which is why it arrives through the
-environment rather than as an argument you have to skip past.
+environment rather than as an argument you have to skip past. An app extension
+has its own identifier too, and cannot use `AppShowcaseUI`, which opens the
+store through `UIApplication`: there, pass the same value to
+`ShowcaseLoader.resolved(override:)` and draw the rows yourself.
 
 ## How it finds your apps
 
@@ -91,9 +96,16 @@ row at all.
 import AppShowcaseCore
 import AppShowcaseStoreKit
 
-let apps = await ShowcaseLoader.resolved()
+let apps = await ShowcaseLoader.resolved(overlay: overlay, override: override)
 if !apps.isEmpty { /* show your "More from me" row */ }
 ```
+
+Give the gate the `overlay` you pass to `AppShowcaseSection`, and the `override`
+you put in its environment. The two load separately, and each one filters by
+what it is given: an `excluded` app still counts in a gate that got no overlay,
+and an `override` changes which roster is fetched. A gate with different
+arguments can open a row onto an empty section. Leave an argument out only when
+the section has none either.
 
 Both imports, because this module does not re-export `AppShowcaseCore` — which
 module owns a symbol stays visible at the call site.
@@ -116,13 +128,13 @@ AppShowcaseSection(tapStyle: .overlay) { Text("More from me") }
 | `.overlay` | No | Compact `SKOverlay` card from the bottom edge |
 | `.storeLink` | **Yes** | Opens the App Store app |
 
-Both in-app presenters fall back to the store link when there is no scene, so a
-tap never silently does nothing.
+Both in-app presenters fall back to the store link when there is no scene to
+present from.
 
 ## Caching
 
 On by default — the rate limit is one you hit by *not* caching. One JSON file per
-storefront under `Caches/`, with a one-day lifetime:
+host and storefront under `Caches/`, with a one-day lifetime:
 
 ```swift
 ShowcaseLoader(
@@ -166,13 +178,14 @@ To measure the *tap* rather than the install, there is a callback:
 
 ```swift
 AppShowcaseSection(onSelect: { app in
-    analytics.capture(.showcaseAppTapped(appID: app.id, name: app.name))
+    analytics.capture(.showcaseAppTapped(appID: app.id))
 }) { Text("More from me") }
 ```
 
 It fires **before** the store is presented, because `.storeLink` backgrounds the
-app and a capture racing that transition is a capture you lose. The kit names no
-event and defines no taxonomy.
+app and a capture racing that transition is a capture you lose. Key the event on
+`app.id`: `app.name` is localized to the storefront, so one app would arrive
+under several names. The kit names no event and defines no taxonomy.
 
 ## Curating, if you want to
 
@@ -203,7 +216,8 @@ string catalog. The kit deliberately owns no strings.
   your iOS ones, and neither lists an app the running OS is too old for.
 - **No fallback to another storefront.** If your apps are not sold where the user
   is, the section is empty. Retrying in `us` would produce rows that dead-end at
-  a store page the user cannot buy from.
+  a store page the user cannot buy from. One default is not a retry: when
+  StoreKit reports no storefront at all, the lookup asks `us`.
 - **No star ratings.** Rating counts are per-storefront and thin enough that
   showing them reads as broken in half the world.
 
@@ -218,9 +232,10 @@ modification date (`C617.1`).
 The package makes two lookup requests to Apple's public lookup endpoint. The
 first carries your app's own bundle identifier and a storefront code; the second
 carries the developer ID that came back, the storefront code, `entity=software`
-and `limit=200`, and no bundle identifier. The only other traffic is the icons,
-which `AsyncImage` loads from the URLs the lookup returned. What the package
-writes to disk is public App Store metadata.
+and `limit=200`, and no bundle identifier. The only other traffic the package
+starts is the icons, which `AsyncImage` loads from the URLs the lookup returned.
+The product sheet and the overlay are StoreKit's own and talk to Apple
+themselves. What the package writes to disk is public App Store metadata.
 
 ## Platforms
 

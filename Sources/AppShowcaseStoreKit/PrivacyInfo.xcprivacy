@@ -12,10 +12,11 @@
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 	<!--
-		Nothing is collected. The request this module makes is the one Core
-		makes — the host app's own bundle identifier and a storefront code, to
-		Apple's public lookup endpoint — reached through Core, with nothing
-		added to it here.
+		Nothing is collected. The two requests this module makes are the ones
+		Core makes, both to Apple's public lookup endpoint: one carries the
+		host app's own bundle identifier and a storefront code, the other the
+		developer's artist ID and a storefront code. Nothing is added to them
+		here.
 	-->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array/>

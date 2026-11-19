@@ -116,6 +116,18 @@ struct ShowcaseLoaderTests {
         }
     }
 
+    /// An answer that holds something, none of it a readable app, is the wire
+    /// format moving. Calling it an unlisted host sends the developer to their
+    /// store listing.
+    @Test("reports a host answer with no readable app as malformed, not as an unlisted host")
+    func unreadableHostRowIsMalformed() async throws {
+        let transport = RecordingTransport(replies: [try Fixture.noEntity.data])
+
+        await #expect(throws: LookupError.malformedResponse) {
+            try await loader(transport).load()
+        }
+    }
+
     @Test("propagates a transport failure rather than pretending the roster is empty")
     func propagatesTransportFailure() async {
         await #expect(throws: LookupError.transportFailed) {
@@ -147,5 +159,17 @@ struct ShowcaseLoaderTests {
         let apps = try await loader(transport, os: "18.0").load()
 
         #expect(apps.isEmpty)
+    }
+
+    /// The rate limit is one a caller hits by not caching, so the default is
+    /// the defense.
+    @Test("caches by default, for a day")
+    func cachesByDefault() {
+        let loader = ShowcaseLoader(
+            hostBundleID: "com.example.NoteJar", storefront: StorefrontCode(alpha3: "USA")
+        )
+
+        #expect(loader.cache is FileShowcaseCache)
+        #expect(loader.cacheLifetime == .seconds(24 * 60 * 60))
     }
 }

@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// The iOS example host.
-///
-/// Only this file is iOS-specific. Everything in `Shared/` compiles anywhere the
-/// package does, which is why the platform is a directory rather than a suffix:
-/// adding a macOS example is a new target over the same `Shared/`.
+/// The iOS example host. Its two screens live in `Shared/`.
 @main
 struct AppShowcaseKitExampleiOSApp: App {
     /// One settings object for both tabs, so a bundle identifier typed into the

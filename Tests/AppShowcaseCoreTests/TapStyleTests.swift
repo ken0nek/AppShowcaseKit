@@ -26,6 +26,23 @@ struct ShowcaseTapStyleTests {
             #expect(try JSONDecoder().decode(ShowcaseTapStyle.self, from: data) == style)
         }
     }
+
+    /// A host that stored the choice stored this string, and no source edit
+    /// reaches an app that is already installed.
+    @Test(
+        "keeps the raw values a host may already have stored",
+        arguments: [
+            (ShowcaseTapStyle.storeSheet, "storeSheet"),
+            (ShowcaseTapStyle.overlay, "overlay"),
+            (ShowcaseTapStyle.storeLink, "storeLink"),
+        ]
+    )
+    func rawValuesAreFrozen(style: ShowcaseTapStyle, raw: String) throws {
+        #expect(style.rawValue == raw)
+        #expect(
+            try JSONDecoder().decode(ShowcaseTapStyle.self, from: Data("\"\(raw)\"".utf8)) == style
+        )
+    }
 }
 
 @Suite("ShowcaseAttribution")

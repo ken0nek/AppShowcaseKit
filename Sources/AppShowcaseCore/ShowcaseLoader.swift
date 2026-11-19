@@ -30,7 +30,7 @@ public enum LookupError: Error, Equatable, Sendable {
     case rosterMissingEntityParameter
 }
 
-/// Fetches bytes for a URL. The only I/O in Core, behind a protocol so the whole
+/// Fetches bytes for a URL. The only network I/O in Core, behind a protocol so the whole
 /// chain tests against captured fixtures.
 ///
 /// An implementation must throw ``LookupError/transportFailed`` for a non-2xx
@@ -41,15 +41,22 @@ public protocol LookupTransport: Sendable {
     func data(from url: URL) async throws -> Data
 }
 
-/// `URLSession`-backed transport. The default for real callers.
+/// `URLSession`-backed transport. The default for real callers. Each request
+/// carries its own idle timeout, whatever the session's configuration says.
 public struct URLSessionTransport: LookupTransport {
     private let session: URLSession
 
     public init(session: URLSession = .shared) { self.session = session }
 
+    // Not the session default of 60 seconds: a cached roster is served only
+    // once the request fails, and the chain makes two requests, so a stalled
+    // connection would hold the section empty for two minutes.
+    static let requestTimeout: TimeInterval = 15
+
     public func data(from url: URL) async throws -> Data {
         do {
-            let (data, response) = try await session.data(from: url)
+            let request = URLRequest(url: url, timeoutInterval: Self.requestTimeout)
+            let (data, response) = try await session.data(for: request)
             // A throttled or erroring endpoint still hands back a body, and that
             // body is not JSON. Classifying it by status here is what keeps it
             // from being mistaken for the wire format changing.
@@ -81,8 +88,8 @@ public struct ShowcaseLoader: Sendable {
     private let storefront: StorefrontCode
     private let running: RunningOS
     private let overlay: ShowcaseOverlay
-    private let cache: (any ShowcaseCache)?
-    private let cacheLifetime: Duration
+    let cache: (any ShowcaseCache)?
+    let cacheLifetime: Duration
     private let now: @Sendable () -> Date
 
     /// - Parameters:
@@ -168,7 +175,13 @@ public struct ShowcaseLoader: Sendable {
 
     private func fetchRoster() async throws -> ShowcaseCacheEntry {
         let identity = try await fetch(.identity(bundleID: hostBundleID, storefront: storefront))
-        guard let host = identity.apps.first else { throw LookupError.hostAppNotFound }
+        guard let host = identity.apps.first else {
+            // Not `hostAppNotFound` when the answer held something: a result
+            // that did not decode as an app is the wire format moving, and
+            // that name would send a developer to their store listing.
+            throw identity.reportedCount > 0
+                ? LookupError.malformedResponse : LookupError.hostAppNotFound
+        }
 
         let roster = try await fetch(.roster(artistID: host.artistID, storefront: storefront))
         if roster.looksLikeMissingEntityParameter {
@@ -200,7 +213,19 @@ public struct ShowcaseLoader: Sendable {
     }
 
     private func fetch(_ endpoint: LookupEndpoint) async throws -> LookupResponse {
-        let data = try await transport.data(from: endpoint.url)
+        let data: Data
+        do {
+            data = try await transport.data(from: endpoint.url)
+        } catch let error as LookupError {
+            throw error
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            // Not rethrown as it came: only `transportFailed` lets a cached
+            // roster stand in, and a transport that throws its own error type
+            // would otherwise never get that fallback.
+            throw LookupError.transportFailed
+        }
         do {
             return try LookupResponse.decode(data)
         } catch {

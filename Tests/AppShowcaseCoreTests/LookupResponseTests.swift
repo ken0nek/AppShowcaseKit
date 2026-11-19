@@ -121,4 +121,14 @@ struct LookupResponseTests {
         #expect(own.id == 6_745_852_921)
         #expect(own.artistID == 975_026_926)
     }
+
+    /// A row that cannot be classified is a row nobody can promise the device
+    /// installs, so it is dropped rather than guessed at.
+    @Test("classifies the two kinds it knows and nothing else")
+    func classifiesKnownKindsOnly() {
+        #expect(ShowcasePlatform(kind: "software") == .iOS)
+        #expect(ShowcasePlatform(kind: "mac-software") == .macOS)
+        #expect(ShowcasePlatform(kind: "vision-software") == nil)
+        #expect(ShowcasePlatform(kind: nil) == nil)
+    }
 }

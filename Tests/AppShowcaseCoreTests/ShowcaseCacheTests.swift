@@ -32,6 +32,14 @@ private struct MalformedTransport: LookupTransport {
     func data(from _: URL) async throws -> Data { Data("<html>nope</html>".utf8) }
 }
 
+private struct RawErrorTransport: LookupTransport {
+    func data(from _: URL) async throws -> Data { throw URLError(.timedOut) }
+}
+
+private struct CancelledTransport: LookupTransport {
+    func data(from _: URL) async throws -> Data { throw CancellationError() }
+}
+
 /// In-memory, so the loader suite never touches a filesystem it would have to
 /// clean up. `FileShowcaseCache` gets its own tests against a temp directory.
 private actor MemoryCache: ShowcaseCache {
@@ -357,6 +365,28 @@ struct ShowcaseCacheTests {
         #expect(apps.count == 1)
     }
 
+    @Test("does not serve one storefront's cached roster to a loader for another")
+    func cacheIsKeyedByTheLoadersStorefront() async throws {
+        let transport = CountingTransport(replies: [
+            try Fixture.bundleID.data, try Fixture.rosterJP.data,
+        ])
+        let cache = MemoryCache(seeded: [key: entry(storedAt: reference)])
+        let japan = ShowcaseLoader(
+            transport: transport,
+            hostBundleID: hostBundleID,
+            storefront: StorefrontCode(alpha3: "JPN"),
+            running: .iOS("26.0"),
+            overlay: .none,
+            cache: cache,
+            cacheLifetime: .seconds(24 * 60 * 60),
+            now: { reference }
+        )
+
+        _ = try await japan.load()
+
+        #expect(await transport.calls() == 2)
+    }
+
     @Test("refetches once the entry is older than the lifetime")
     func staleCacheRefetches() async throws {
         let transport = CountingTransport(replies: [
@@ -400,6 +430,28 @@ struct ShowcaseCacheTests {
         let apps = try await loader(transport: FailingTransport(), cache: cache).load()
 
         #expect(apps.count == 1)
+    }
+
+    @Test("falls back to a stale roster when a transport throws an error of its own")
+    func staleServedWhenATransportThrowsARawError() async throws {
+        let cache = MemoryCache(
+            seeded: [key: entry(storedAt: reference.addingTimeInterval(-100 * 24 * 60 * 60))]
+        )
+
+        let apps = try await loader(transport: RawErrorTransport(), cache: cache).load()
+
+        #expect(apps.count == 1)
+    }
+
+    @Test("never answers a cancelled load from a stale roster")
+    func cancellationIsNotATransportFailure() async {
+        let cache = MemoryCache(
+            seeded: [key: entry(storedAt: reference.addingTimeInterval(-100 * 24 * 60 * 60))]
+        )
+
+        await #expect(throws: CancellationError.self) {
+            try await loader(transport: CancelledTransport(), cache: cache).load()
+        }
     }
 
     @Test("still throws when the transport fails and there is nothing cached")

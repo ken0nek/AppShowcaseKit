@@ -10,9 +10,9 @@ import Foundation
 /// - **An app extension.** A widget or share extension has its own identifier —
 ///   `com.example.App.Widget` — and that identifier is not on the App Store at
 ///   all. The lookup returns no results, the chain ends at `hostAppNotFound`,
-///   and the section renders empty with no way to say why.
-/// - **A Catalyst variant, or a renamed app**, whose store listing sits under an
-///   identifier the running binary does not carry.
+///   and the roster comes back empty with no way to say why.
+/// - **A renamed app**, whose store listing sits under an identifier the
+///   running binary does not carry.
 /// - **A diagnostic harness** pointing the kit at a roster it does not own.
 ///
 /// **This is host identity, and that is its entire remit.** It is not a

@@ -15,7 +15,7 @@ public struct ShowcaseOverlay: Sendable, Equatable {
 
     /// App Store IDs to show first, in this order. **Not an allowlist** — apps
     /// not named here still appear, after these, in the order the API returned
-    /// them. That way shipping app #5 needs no edit here.
+    /// them. That way shipping a new app needs no edit here.
     public var order: [Int]
 
     /// App Store IDs to hide — a retired app, or one that makes no sense next to

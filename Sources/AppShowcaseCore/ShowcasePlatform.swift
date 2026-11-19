@@ -29,10 +29,9 @@ public enum ShowcasePlatform: String, Sendable, Equatable, Hashable, Codable, Ca
     /// Returns `nil` for anything unrecognized, which drops the row. That is the
     /// deliberate direction to fail in: a row we cannot classify is a row we
     /// cannot say the device can install, and this package would rather show one
-    /// app less than one dead end. If Apple ever renames these, a whole roster
-    /// drops and ``LookupResponse/looksLikeMissingEntityParameter`` fires — the
-    /// diagnosis will read "missing entity parameter" rather than "the wire moved",
-    /// but a developer gets an error rather than a silently empty section.
+    /// app less than one dead end. If Apple ever renames these, the host's own
+    /// row drops first and the loader reports ``LookupError/malformedResponse``,
+    /// so a developer gets an error rather than a silently empty section.
     init?(kind: String?) {
         switch kind {
         case "software": self = .iOS

@@ -24,11 +24,4 @@ struct RunningOSTests {
 
         #expect(RunningOS.current.version.hasPrefix("\(major)."))
     }
-
-    /// Core is Foundation-only, and this is the piece most likely to tempt
-    /// someone into importing UIKit for `UIDevice.systemVersion`.
-    @Test("derives itself without StoreKit, SwiftUI or UIKit")
-    func needsNoUIFrameworks() {
-        #expect(!RunningOS.current.version.isEmpty)
-    }
 }

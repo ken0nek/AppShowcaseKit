@@ -9,6 +9,7 @@ private final class StubURLProtocol: URLProtocol, @unchecked Sendable {
     nonisolated(unsafe) static var statusCode = 200
     nonisolated(unsafe) static var body = Data()
     nonisolated(unsafe) static var failure: (any Error)?
+    nonisolated(unsafe) static var lastTimeout: TimeInterval?
 
     static func session() -> URLSession {
         let configuration = URLSessionConfiguration.ephemeral
@@ -21,6 +22,7 @@ private final class StubURLProtocol: URLProtocol, @unchecked Sendable {
     override func stopLoading() {}
 
     override func startLoading() {
+        Self.lastTimeout = request.timeoutInterval
         if let failure = Self.failure {
             client?.urlProtocol(self, didFailWithError: failure)
             return
@@ -41,6 +43,7 @@ struct URLSessionTransportTests {
     private let url = URL(string: "https://itunes.apple.com/lookup?id=1")!
 
     private func transport(status: Int, body: Data = Data("{}".utf8)) -> URLSessionTransport {
+        StubURLProtocol.lastTimeout = nil
         StubURLProtocol.failure = nil
         StubURLProtocol.statusCode = status
         StubURLProtocol.body = body
@@ -93,5 +96,15 @@ struct URLSessionTransportTests {
         await #expect(throws: CancellationError.self) {
             try await transport.data(from: url)
         }
+    }
+
+    /// A cached roster is served only once the request fails, and the chain
+    /// makes two requests, so the session's 60-second default would hold a
+    /// stalled connection's section empty for two minutes.
+    @Test("gives up on a stalled request long before the session default")
+    func boundsTheRequestTimeout() async throws {
+        _ = try await transport(status: 200).data(from: url)
+
+        #expect(StubURLProtocol.lastTimeout == 15)
     }
 }

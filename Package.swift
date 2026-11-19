@@ -14,11 +14,12 @@ let package = Package(
     name: "AppShowcaseKit",
     // iOS is the supported platform, and the only one this package claims.
     //
-    // The iOS floor is policy rather than constraint: Core is Foundation-only and
-    // UI's newest API is iOS 15, so both would compile far lower — but a floor is
-    // a promise to keep working, and this one is set where the package is
-    // actually built and run. Raising a floor later breaks adopters. Lowering one
-    // never does, so if you need iOS 15, open an issue rather than a fork.
+    // The iOS floor is policy rather than constraint: Core is Foundation-only, and
+    // the StoreKit and UI targets' newest API is iOS 15, so all three would
+    // compile far lower — but a floor is a promise to keep working, and this one
+    // is set where the package is actually built and run. Raising a floor later
+    // breaks adopters. Lowering one never does, so if you need iOS 15, open an
+    // issue rather than a fork.
     //
     // The macOS floor is NOT a support claim, and it is not removable. `swift
     // build` and `swift test` run on a Mac host, and that is the entire hermetic

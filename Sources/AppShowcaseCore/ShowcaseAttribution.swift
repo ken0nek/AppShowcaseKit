@@ -11,9 +11,11 @@ public struct ShowcaseAttribution: Sendable, Equatable {
     /// account.
     public var providerToken: String?
 
-    /// Names the source of the install. Defaults to `showcase-<host app>`, so
-    /// App Analytics attributes the install to the app that showed the row with
-    /// nothing configured per app.
+    /// Names the source of the install. `init(providerToken:hostBundleID:)`
+    /// derives `showcase-<host app>` from the bundle identifier, so App Analytics
+    /// attributes the install to the app that showed the row with nothing
+    /// configured per app. `init(providerToken:campaignToken:)` leaves it `nil`
+    /// unless given.
     public var campaignToken: String?
 
     public init(providerToken: String? = nil, campaignToken: String? = nil) {

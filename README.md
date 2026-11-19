@@ -155,9 +155,12 @@ AppShowcaseSection(
 ```
 
 The provider token is the one value the kit cannot derive — it belongs to your App
-Store Connect account. The campaign token defaults to `showcase-<your app>`, so
-App Analytics attributes the install to the app that showed the row. Without a
-provider token everything still works, unmeasured.
+Store Connect account. Built with `init(providerToken:hostBundleID:)`, as above,
+the campaign token is `showcase-<your app>` (the last component of the bundle
+identifier, lowercased), so App Analytics attributes the install to the app that
+showed the row. The other initializer, `init(providerToken:campaignToken:)`,
+leaves it `nil` unless you pass one. Without a provider token everything still
+works, unmeasured.
 
 To measure the *tap* rather than the install, there is a callback:
 
@@ -212,9 +215,12 @@ the roster is cached to a file rather than to `UserDefaults` (`CA92.1`), and why
 freshness comes from a timestamp inside the payload rather than from the file's
 modification date (`C617.1`).
 
-The only request the package makes carries your app's own bundle identifier and a
-storefront code, to Apple's public lookup endpoint. Nothing else leaves the
-device, and what it writes to disk is public App Store metadata.
+The package makes two lookup requests to Apple's public lookup endpoint. The
+first carries your app's own bundle identifier and a storefront code; the second
+carries the developer ID that came back, the storefront code, `entity=software`
+and `limit=200`, and no bundle identifier. The only other traffic is the icons,
+which `AsyncImage` loads from the URLs the lookup returned. What the package
+writes to disk is public App Store metadata.
 
 ## Platforms
 
@@ -231,7 +237,7 @@ core does not compile at all.
 The Swift floor is a compiler floor. The store-sheet delegate is satisfied by an
 isolated conformance (SE-0470), which no compiler before 6.2 can parse, so
 declaring it makes an older toolchain fail at resolve rather than mid-build. The
-iOS floor is policy — both targets would compile considerably lower. If you need
+iOS floor is policy — all three targets would compile considerably lower. If you need
 either floor moved, or another platform supported, open an issue.
 
 ## Testing

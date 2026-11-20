@@ -153,3 +153,6 @@ tag and creates the GitHub Release. Do not tag by hand.
 - **The bump is a patch unless the release PR carries `tagpr:minor` or `tagpr:major`.**
 - **There is no version file** (`versionFile = -`). The README's install snippet pins a major-version
   lower bound and is not rewritten per release.
+- **An API break fails CI unless the release PR is labeled `tagpr:major`.** `.github/workflows/api.yml`
+  runs `scripts/api-check.sh` against the latest tag on every push to `main` and on PR label changes;
+  it compares on a macOS host, so declarations behind `#if os(iOS)` are not diffed.

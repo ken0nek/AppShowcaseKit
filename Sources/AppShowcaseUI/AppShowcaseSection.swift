@@ -172,10 +172,12 @@ private struct ShowcaseRow: View {
             onSelect(app)
             tapStyle.makePresenter().present(app, attribution: attribution)
         } label: {
+            // `.contentShape` on both branches, not left to the layout: a plain
+            // button in a `List` hit-tests only what its label draws, so the
+            // `Spacer` and the empty trailing width would swallow taps.
             if dynamicTypeSize.isAccessibilitySize {
                 // The chip drops below rather than competing for a line it
-                // cannot win. `maxWidth: .infinity` keeps the row's tap target
-                // full-width, which the Spacer does in the other branch.
+                // cannot win.
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 12) {
                         icon
@@ -184,6 +186,7 @@ private struct ShowcaseRow: View {
                     priceChip
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             } else {
                 HStack(spacing: 12) {
                     icon
@@ -191,6 +194,7 @@ private struct ShowcaseRow: View {
                     Spacer(minLength: 8)
                     priceChip
                 }
+                .contentShape(Rectangle())
             }
         }
         .buttonStyle(.plain)

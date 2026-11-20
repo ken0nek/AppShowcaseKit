@@ -72,7 +72,7 @@ tested here:
 |---|---|
 | Artist lookup without `entity=software` | HTTP 200, valid JSON, `resultCount: 1`, **zero apps**. Fails *successfully*, so it ships and the section is empty forever |
 | `Storefront.current.countryCode` is alpha-3 | `country=JPN` silently serves the **US** storefront — wrong language, price, and ratings |
-| Ignoring `kind` | `entity=software` returns your **Mac** apps too, and `wrapperType` is `software` for both. A Mac app's floor is a *macOS* version, which sorts below every shipping iOS version, so the OS-floor check below does not just miss it — it certifies it |
+| Ignoring `kind` | `entity=software` returns your **Mac** apps too, and `wrapperType` is `software` for both. A Mac app's floor is a *macOS* version, and macOS and iOS numbers are not comparable, so the OS-floor check below does not just miss it — it can certify it |
 | No `minimumOsVersion` filter | Rows that dead-end on a device that cannot install them |
 | Caching in `UserDefaults` | Drags required-reason API `CA92.1` into your privacy manifest |
 | No caching | ~20 requests/min per IP, shared across all your apps on that device |

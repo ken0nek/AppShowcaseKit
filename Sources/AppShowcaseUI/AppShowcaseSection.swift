@@ -149,7 +149,7 @@ enum ShowcaseSectionLoad {
 
 // MARK: - Row
 
-private struct ShowcaseRow: View {
+struct ShowcaseRow: View {
     let app: ShowcaseApp
     let tapStyle: ShowcaseTapStyle
     let attribution: ShowcaseAttribution
@@ -210,6 +210,10 @@ private struct ShowcaseRow: View {
             // already storefront-localized.
             Text(app.tagline ?? app.genre)
                 .font(.footnote)
+                // Not chained straight onto the `Text`: that picks `Text`'s own
+                // `foregroundStyle`, which draws `.secondary` as the primary at
+                // half opacity and ignores a host's `foregroundStyle(_:_:_:)`.
+                .padding(0)
                 .foregroundStyle(.secondary)
         }
     }

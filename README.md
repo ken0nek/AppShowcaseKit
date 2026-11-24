@@ -111,8 +111,10 @@ Both imports, because this module does not re-export `AppShowcaseCore` — which
 module owns a symbol stays visible at the call site.
 
 **`AppShowcaseUI`** — optional. Rows, and the three presenters. It ships **zero
-cosmetic configuration** on purpose: no colors, no fonts, no copy. The only text
-it renders comes from the App Store, already localized. If you want rows that
+cosmetic configuration** on purpose: no color, font or copy parameters. Rows take
+your foreground levels, font design and weight, Dynamic Type and layout direction,
+and the app name your font; the footnote text styles, spacing, shapes and plain
+button style are fixed. The only text it renders comes from the App Store, already localized. If you want rows that
 match your design system, use `AppShowcaseCore` and draw your own — that is the
 supported path, not a workaround.
 

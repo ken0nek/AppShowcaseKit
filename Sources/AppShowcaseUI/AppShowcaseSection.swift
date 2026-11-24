@@ -4,8 +4,10 @@ import SwiftUI
 
 /// A Settings section listing the other apps by the same developer.
 ///
-/// Zero configuration in the cosmetic sense: no colors, no fonts, no strings.
-/// It inherits the host's `List` styling entirely, and the only text it displays
+/// Zero configuration in the cosmetic sense: no color, font or string parameters.
+/// Rows take the host's foreground levels, font design and weight, Dynamic Type
+/// and layout direction, and the app name its font; the footnote text styles,
+/// spacing, shapes and plain button style are fixed. The only text it displays
 /// comes from the App Store, already localized to the user's storefront. If you
 /// want rows that match your own design system, use `AppShowcaseCore` directly
 /// and draw your own — that is the supported path, not a workaround.
